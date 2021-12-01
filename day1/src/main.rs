@@ -3,16 +3,15 @@ use std::process::exit;
 use day1::count_depth;
 
 fn main() {
-    match read_input_file() {
-        Ok(contents) => {
-            let result = count_depth(&contents);
-            println!("Solution: {}", result);
-        }
+    let result = match parse_arguments(env::args()) {
+        Ok((contents, window_size)) => count_depth(&contents, window_size),
         Err(Error { message }) => {
             eprintln!("Error: {}", message);
             exit(1);
         }
-    }
+    };
+    
+    println!("Solution: {}", result);
 }
 
 struct Error {
@@ -20,7 +19,7 @@ struct Error {
 }
 
 impl Error {
-    fn no_arguments() -> Error {
+    fn no_filename() -> Error {
         Error { message: String::from("Expected filename as first argument") }
     }
 
@@ -29,12 +28,23 @@ impl Error {
     }
 }
 
-fn read_input_file() -> Result<String, Error> {
-    let args: Vec<String> = env::args().collect();
-    if args.len() < 2 {
-        return Result::Err(Error::no_arguments());
-    }
+fn parse_arguments(mut args: env::Args) -> Result<(String, usize), Error> {
+    args.next();
 
-    let filename = &args[1];
-    fs::read_to_string(filename).map_err(|error| Error::cannot_read(filename, &error))
+    let filename = match args.next() {
+        Some(arg) => arg,
+        None => return Err(Error::no_filename()),
+    };
+
+    let contents = match fs::read_to_string(&filename) {
+        Ok(arg) => arg,
+        Err(error) => return Err(Error::cannot_read(&filename, &error))
+    };
+
+    let window_size = match args.next().and_then(|f| f.parse().ok()) {
+        Some(arg) => arg,
+        None => 1,
+    };
+
+    Ok((contents, window_size))
 }
