@@ -1,31 +1,32 @@
-
-
-pub fn count_depth(contents: &str, window_size: usize) -> i32 {
-    let depths = get_depths(contents);
-
-    let mut nb_increases = 0;
-    let mut previous_depth: Option<i32> = None;
-
-    for sliding_window in depths.windows(window_size) {
-        let current_depth = sliding_window.iter().sum();
-        nb_increases += match previous_depth {
-            Some(previous_depth) if previous_depth < current_depth => 1,
-            Some(_) => 0,
-            None => 0,
-        };
-        previous_depth = Some(current_depth);
-    }
-
-    return nb_increases;
+pub fn count_depth(contents: &str, window_size: usize) -> usize {
+    let measurements = get_measurements(contents);
+    let sliding_sums = calculate_sliding_sums(measurements, window_size);
+    count_increases(&sliding_sums)
 }
 
-fn get_depths(contents: &str) -> Vec<i32> {
+fn get_measurements(contents: &str) -> Vec<i32> {
     contents
         .split('\n')
         .filter_map(|line| line.parse::<i32>().ok())
-        .collect::<Vec<i32>>()
+        .collect()
 }
 
+fn calculate_sliding_sums(measurements: Vec<i32>, window_size: usize) -> Vec<i32> {
+    measurements
+        .windows(window_size)
+        .map(|window| window.iter().sum())
+        .collect()
+}
+
+fn count_increases(measurements: &[i32]) -> usize {
+    measurements
+        .windows(2)
+        .filter(|&arg| match arg {
+            [prev, next] if prev < next => true,
+            _ => false
+        })
+        .count()
+}
 
 #[cfg(test)]
 mod tests {
