@@ -1,16 +1,16 @@
-mod count_depth;
 use std::{env, fs};
 use std::process::exit;
+use day1::count_depth;
 
 fn main() {
     match read_input_file() {
         Ok(contents) => {
-            let result = count_depth::execute(contents);
+            let result = count_depth(&contents);
             println!("Solution: {}", result);
         }
         Err(Error { message }) => {
             eprintln!("Error: {}", message);
-            exit(-1);
+            exit(1);
         }
     }
 }
@@ -36,5 +36,5 @@ fn read_input_file() -> Result<String, Error> {
     }
 
     let filename = &args[1];
-    fs::read_to_string(filename).map_err(|error| -> Error { Error::cannot_read(filename, &error) })
+    fs::read_to_string(filename).map_err(|error| Error::cannot_read(filename, &error))
 }
