@@ -1,17 +1,17 @@
 pub fn count_depth(contents: &str, window_size: usize) -> usize {
     let measurements = get_measurements(contents);
-    let sliding_sums = calculate_sliding_sums(measurements, window_size);
+    let sliding_sums = calculate_sliding_sums(&measurements, window_size);
     count_increases(&sliding_sums)
 }
 
 fn get_measurements(contents: &str) -> Vec<i32> {
     contents
         .split('\n')
-        .filter_map(|line| line.parse::<i32>().ok())
+        .filter_map(|line| line.parse().ok())
         .collect()
 }
 
-fn calculate_sliding_sums(measurements: Vec<i32>, window_size: usize) -> Vec<i32> {
+fn calculate_sliding_sums(measurements: &[i32], window_size: usize) -> Vec<i32> {
     measurements
         .windows(window_size)
         .map(|window| window.iter().sum())
@@ -21,8 +21,8 @@ fn calculate_sliding_sums(measurements: Vec<i32>, window_size: usize) -> Vec<i32
 fn count_increases(measurements: &[i32]) -> usize {
     measurements
         .windows(2)
-        .filter(|&arg| match arg {
-            [prev, next] if prev < next => true,
+        .filter(|window| match window {
+            [current, next] if current < next => true,
             _ => false
         })
         .count()
@@ -30,7 +30,7 @@ fn count_increases(measurements: &[i32]) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use crate::count_depth;
+    use super::*;
 
     #[test]
     fn can_count_increases_in_depth() {
