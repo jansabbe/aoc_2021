@@ -29,6 +29,6 @@ mod tests {
             up 3\n\
             down 8\n\
             forward 2\n";
-        assert_eq!(track_submarine(contents), 150);
+        assert_eq!(track_submarine(contents), 900);
     }
 }
