@@ -11,7 +11,7 @@ impl Position {
         Position { horizontal: 0, depth: 0, aim: 0 }
     }
 
-    pub fn execute(&self, movement: &Movement) -> Self {
+    pub fn apply(&self, movement: &Movement) -> Self {
         match movement {
             Movement::Forward(forward) => Position {
                 horizontal: self.horizontal + forward,

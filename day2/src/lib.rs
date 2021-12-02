@@ -7,7 +7,7 @@ use position::Position;
 pub fn track_submarine(contents: &str) -> i32 {
     let movements = get_movements(contents);
     let final_position = movements
-        .fold(Position::start(), |position, movement| position.execute(&movement));
+        .fold(Position::start(), |position, movement| position.apply(&movement));
     final_position.result()
 }
 
