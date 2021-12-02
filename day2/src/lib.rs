@@ -1,20 +1,20 @@
 mod movement;
 mod position;
+
 use movement::Movement;
 use position::Position;
 
 pub fn track_submarine(contents: &str) -> i32 {
     let movements = get_movements(contents);
-    let final_position = movements.iter()
-        .fold(Position::start(), |position, movement| position.execute(movement));
+    let final_position = movements
+        .fold(Position::start(), |position, movement| position.execute(&movement));
     final_position.result()
 }
 
-fn get_movements(contents: &str) -> Vec<Movement> {
+fn get_movements<'a>(contents: &'a str) -> impl Iterator<Item=Movement> + 'a {
     contents
-        .split('\n')
+        .lines()
         .filter_map(|line| line.parse().ok())
-        .collect()
 }
 
 #[cfg(test)]

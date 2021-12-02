@@ -22,16 +22,7 @@ enum Error {
 
 fn parse_arguments(mut args: env::Args) -> Result<String, Error> {
     args.next();
-
-    let filename = match args.next() {
-        Some(arg) => arg,
-        None => return Err(Error::NoFilename),
-    };
-
-    let contents = match fs::read_to_string(&filename) {
-        Ok(arg) => arg,
-        Err(_) => return Err(Error::CannotRead)
-    };
-
-    Ok(contents)
+    let filename = args.next().ok_or(Error::NoFilename)?;
+    let contents = fs::read_to_string(&filename).ok();
+    contents.ok_or(Error::CannotRead)
 }
