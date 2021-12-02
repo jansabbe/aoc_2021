@@ -10,7 +10,7 @@ impl FromStr for Movement {
     type Err = String;
 
     fn from_str(line: &str) -> Result<Self, Self::Err> {
-        if let Some((command, delta)) = Self::tokenize(line) {
+        if let Some((command, delta)) = tokenize(line) {
             match command.as_str() {
                 "forward" => Ok(Movement::Forward(delta)),
                 "up" => Ok(Movement::Up(delta)),
@@ -23,18 +23,16 @@ impl FromStr for Movement {
     }
 }
 
-impl Movement {
-    fn tokenize(line: &str) -> Option<(String, i32)> {
-        let mut tokens = line.split_whitespace();
+fn tokenize(line: &str) -> Option<(String, i32)> {
+    let mut tokens = line.split_whitespace();
 
-        let command = match tokens.next() {
-            Some(command) => command,
-            None => return None
-        };
-        let delta: i32 = match tokens.next() {
-            Some(delta) => delta.parse().expect("Should always be number"),
-            None => return None
-        };
-        Some((command.to_string(), delta))
-    }
+    let command = match tokens.next() {
+        Some(command) => command,
+        None => return None
+    };
+    let delta: i32 = match tokens.next() {
+        Some(delta) => delta.parse().expect("Should always be number"),
+        None => return None
+    };
+    Some((command.to_string(), delta))
 }
