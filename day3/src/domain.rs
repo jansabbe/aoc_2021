@@ -1,71 +1,131 @@
 use std::fmt::{Debug, Display, Formatter};
-use std::ops;
+use std::num::ParseIntError;
+use std::ops::{BitAnd, BitOr, BitXor, Mul, Not};
 use std::str::FromStr;
 
-#[derive(PartialEq, Debug)]
-pub struct DiagnosticReport {
-    counts_of_ones: Vec<u32>,
-    number_of_readings: u32,
+#[derive(Debug, PartialEq, Clone)]
+pub struct BinaryNumberList {
+    pub nb_bits: usize,
+    pub numbers: Vec<BinaryNumber>,
 }
 
-impl DiagnosticReport {
-    pub fn new(binary_number: &BinaryNumber) -> Self {
-        DiagnosticReport {
-            counts_of_ones: binary_number.number.iter().map(|is_one| if *is_one { 1 } else { 0 }).collect(),
-            number_of_readings: 1,
+impl BinaryNumberList {
+    pub fn new(numbers: Vec<BinaryNumber>) -> Self {
+        BinaryNumberList {
+            nb_bits: numbers.first().unwrap().nb_bits,
+            numbers,
         }
     }
 
-    pub fn gamma_rate(&self) -> BinaryNumber {
-        BinaryNumber {
-            number: self.counts_of_ones.iter().map(|count| *count > (self.number_of_readings / 2)).collect()
-        }
+    pub fn most_common_bits(&self) -> BinaryNumber {
+        let zero = BinaryNumber::zeros(self.nb_bits);
+        (0..self.nb_bits).fold(zero, |result, pos| {
+            result | self.most_common_bit_at(pos)
+        })
     }
 
-    pub fn epsilon_rate(&self) -> BinaryNumber {
-        BinaryNumber {
-            number: self.counts_of_ones.iter().map(|count| *count < (self.number_of_readings / 2)).collect()
-        }
+    pub fn least_common_bits(&self) -> BinaryNumber {
+        !self.most_common_bits()
     }
-}
 
-impl ops::Add<&BinaryNumber> for DiagnosticReport {
-    type Output = DiagnosticReport;
-
-    fn add(self, rhs: &BinaryNumber) -> Self::Output {
-        DiagnosticReport {
-            number_of_readings: self.number_of_readings + 1,
-            counts_of_ones: self.counts_of_ones.iter()
-                .zip(rhs.number.iter())
-                .map(|(count, is_one)| if *is_one { count + 1 } else { *count })
-                .collect(),
+    fn most_common_bit_at(&self, position: usize) -> BinaryNumber {
+        let nb_ones = self.numbers.iter().filter(|b| b.has_one_at(position)).count();
+        let nb_zeros = self.numbers.len() - nb_ones;
+        if nb_ones > nb_zeros {
+            BinaryNumber::one_at_position(position, self.nb_bits)
+        } else {
+            BinaryNumber::zeros(self.nb_bits)
         }
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct BinaryNumber {
-    number: Vec<bool>,
+    pub nb_bits: usize,
+    pub number: u32,
 }
 
 impl BinaryNumber {
-    pub fn to_u32(&self) -> u32 {
-        u32::from_str_radix(&self.to_string(), 2).unwrap()
+    fn new(number: u32, nb_bits: usize) -> BinaryNumber {
+        BinaryNumber { number, nb_bits }
+    }
+
+    pub fn ones(nb_bits: usize) -> BinaryNumber {
+        let number = (0..nb_bits).fold(0, |sum, pos| sum + 2_u32.pow(pos as u32));
+        BinaryNumber { number, nb_bits }
+    }
+
+    pub fn zeros(nb_bits: usize) -> BinaryNumber {
+        !Self::ones(nb_bits)
+    }
+
+    pub fn one_at_position(position: usize, nb_bits: usize) -> BinaryNumber {
+        BinaryNumber { number: 2_u32.pow(position as u32), nb_bits }
+    }
+
+    pub fn has_one_at(&self, position: usize) -> bool {
+        let mask = Self::one_at_position(position, self.nb_bits);
+        self.number & mask.number > 0
     }
 }
 
 impl FromStr for BinaryNumber {
-    type Err = ();
+    type Err = ParseIntError;
 
     fn from_str(reading: &str) -> Result<Self, Self::Err> {
-        Ok(BinaryNumber { number: reading.chars().map(|c| c == '1').collect() })
+        let number = u32::from_str_radix(reading, 2)?;
+
+        Ok(BinaryNumber {
+            nb_bits: reading.len(),
+            number,
+        })
     }
 }
 
+impl BitAnd for BinaryNumber {
+    type Output = BinaryNumber;
+    fn bitand(self, rhs: Self) -> Self::Output {
+        debug_assert_eq!(self.nb_bits, rhs.nb_bits);
+        BinaryNumber { nb_bits: self.nb_bits, number: self.number & rhs.number }
+    }
+}
+
+impl BitOr for BinaryNumber {
+    type Output = BinaryNumber;
+    fn bitor(self, rhs: Self) -> Self::Output {
+        debug_assert_eq!(self.nb_bits, rhs.nb_bits);
+        BinaryNumber { nb_bits: self.nb_bits, number: self.number | rhs.number }
+    }
+}
+
+
+impl BitXor for BinaryNumber {
+    type Output = BinaryNumber;
+    fn bitxor(self, rhs: Self) -> Self::Output {
+        debug_assert_eq!(self.nb_bits, rhs.nb_bits);
+        BinaryNumber { nb_bits: self.nb_bits, number: self.number ^ rhs.number }
+    }
+}
+
+impl Not for BinaryNumber {
+    type Output = BinaryNumber;
+    fn not(self) -> Self::Output {
+        self ^ BinaryNumber::ones(self.nb_bits)
+    }
+}
+
+impl Mul for BinaryNumber {
+    type Output = u32;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        self.number * rhs.number
+    }
+}
+
+
 impl Display for BinaryNumber {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let binary_as_string = self.number.iter().map(|is_one| if *is_one { '1' } else { '0' }).collect::<String>();
-        write!(f, "{}", binary_as_string)
+        write!(f, "{:0width$b}", self.number, width = self.nb_bits)
     }
 }
 
@@ -76,36 +136,44 @@ mod tests {
 
     #[test]
     fn can_convert_string_to_binary_number() {
-        let result: BinaryNumber = "1101".parse().expect("Should parse");
-        assert_eq!(result, BinaryNumber { number: vec![true, true, false, true] })
+        let result = BinaryNumber::from_str("01101").unwrap();
+        assert_eq!(result, BinaryNumber::new(0b1101, 5))
     }
 
     #[test]
-    fn can_add_a_binary_number_to_a_report() {
-        let binary_number: BinaryNumber = "100".parse().unwrap();
-        let report = DiagnosticReport::new(&"110".parse().unwrap());
-        let report = report + &binary_number;
-        assert_eq!(report, DiagnosticReport {
-            counts_of_ones: vec![2, 1, 0],
-            number_of_readings: 2,
-        })
+    fn can_create_binary_number_with_one_at_position() {
+        let result = BinaryNumber::one_at_position(3, 4);
+        assert_eq!(result, BinaryNumber::new(0b1000, 4))
     }
 
     #[test]
-    fn can_get_gamma_and_epsilon_rate_from_report() {
-        let report = DiagnosticReport {
-            counts_of_ones: vec![7, 11, 2],
-            number_of_readings: 12,
-        };
-
-        assert_eq!(report.gamma_rate(), BinaryNumber::from_str("110").unwrap());
-        assert_eq!(report.epsilon_rate(), BinaryNumber::from_str("001").unwrap());
+    fn can_check_if_binary_number_has_one_at_position() {
+        let number = BinaryNumber::new(0b1000, 4);
+        assert!(number.has_one_at(3));
+        assert!(!number.has_one_at(2));
     }
 
     #[test]
-    fn can_get_binary_number_as_int() {
-        let binary_number = BinaryNumber::from_str("011").unwrap();
+    fn can_use_operators_with_binary_numbers() {
+        let first = BinaryNumber::from_str("1100").unwrap();
+        let second = BinaryNumber::from_str("1010").unwrap();
 
-        assert_eq!(binary_number.to_u32(), 3);
+        assert_eq!(first & second, BinaryNumber::from_str("1000").unwrap());
+        assert_eq!(first | second, BinaryNumber::from_str("1110").unwrap());
+        assert_eq!(first ^ second, BinaryNumber::from_str("0110").unwrap());
+        assert_eq!(!first, BinaryNumber::from_str("0011").unwrap());
+    }
+
+    #[test]
+    fn can_create_most_significant_number() {
+        let numbers = BinaryNumberList::new(vec![
+            BinaryNumber::from_str("100").unwrap(),
+            BinaryNumber::from_str("101").unwrap(),
+            BinaryNumber::from_str("011").unwrap(),
+        ]);
+
+        let result = numbers.most_common_bits();
+
+        assert_eq!(result, BinaryNumber::from_str("101").unwrap());
     }
 }

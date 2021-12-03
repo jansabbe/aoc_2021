@@ -1,19 +1,22 @@
 mod domain;
-use domain::{BinaryNumber, DiagnosticReport};
+
+use domain::{BinaryNumber};
+use crate::domain::BinaryNumberList;
 
 
 pub fn calculate_power_consumption(contents: &str) -> u32 {
-    if let Some((first, rest)) = get_binary_numbers(contents).as_slice().split_first() {
-        let report = rest.iter().fold(DiagnosticReport::new(first), |report, binary| report + binary);
-        return report.gamma_rate().to_u32() * report.epsilon_rate().to_u32();
-    }
-    0
+    let list = get_binary_numbers(contents);
+    let gamma_rate = list.most_common_bits();
+    let epsilon_rate = list.least_common_bits();
+    gamma_rate * epsilon_rate
 }
 
-fn get_binary_numbers(contents: &str) -> Vec<BinaryNumber> {
-    contents.lines()
+fn get_binary_numbers(contents: &str) -> BinaryNumberList {
+    BinaryNumberList::new(contents
+        .lines()
         .filter_map(|line| line.parse::<BinaryNumber>().ok())
         .collect()
+    )
 }
 
 #[cfg(test)]
