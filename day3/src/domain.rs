@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 use std::num::ParseIntError;
-use std::ops::Mul;
+use std::ops::{Index, Mul};
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -17,30 +17,36 @@ impl BinaryNumberList {
         }
     }
 
-    pub fn retain<F>(&mut self, predicate: F) where F: FnMut(&BinaryNumber) -> bool {
-        self.numbers.retain(predicate);
-    }
-
-    pub fn most_common_bits(&self) -> BinaryNumber {
-        let positions: Vec<usize> = (0..self.nb_bits)
-            .filter(|position| self.nb_ones_at(*position) > self.nb_zeros_at(*position))
+    pub fn create_number(&self, set_one_if: fn(usize, usize) -> bool) -> BinaryNumber {
+        let indices: Vec<usize> = (0..self.nb_bits)
+            .filter(|&index| {
+                let (nb_ones, nb_zeros) = self.count_at(index);
+                set_one_if(nb_ones, nb_zeros)
+            })
             .collect();
-        BinaryNumber::ones_at(&positions, self.nb_bits)
+
+        BinaryNumber::ones_at(&indices, self.nb_bits)
     }
 
-    pub fn least_common_bits(&self) -> BinaryNumber {
-        let positions: Vec<usize> = (0..self.nb_bits)
-            .filter(|position| self.nb_ones_at(*position) < self.nb_zeros_at(*position))
-            .collect();
-        BinaryNumber::ones_at(&positions, self.nb_bits)
+    pub fn find(&self, keep_one_if: fn(usize, usize) -> bool) -> BinaryNumber {
+        let mut list = self.clone();
+        for index in (0..list.nb_bits).rev() {
+            if list.numbers.len() == 1 {
+                break;
+            }
+            let (nb_ones, nb_zeros) = list.count_at(index);
+            if keep_one_if(nb_ones, nb_zeros) {
+                list.numbers.retain(|number| number[index] == Bit::One);
+            } else {
+                list.numbers.retain(|number| number[index] == Bit::Zero);
+            }
+        }
+        list.numbers[0]
     }
 
-    pub fn nb_zeros_at(&self, position: usize) -> usize {
-        self.numbers.len() - self.nb_ones_at(position)
-    }
-
-    pub fn nb_ones_at(&self, position: usize) -> usize {
-        self.numbers.iter().filter(|b| b.has_one_at(position)).count()
+    fn count_at(&self, index: usize) -> (usize, usize) {
+        let nb_ones = self.numbers.iter().filter(|binary| binary[index] == Bit::One).count();
+        (nb_ones, self.numbers.len() - nb_ones)
     }
 }
 
@@ -51,18 +57,9 @@ pub struct BinaryNumber {
 }
 
 impl BinaryNumber {
-    pub fn ones_at(positions: &[usize], nb_bits: usize) -> BinaryNumber {
-        let number = positions.iter().map(|&position| 2_u32.pow(position as u32)).sum();
+    fn ones_at(indices: &[usize], nb_bits: usize) -> BinaryNumber {
+        let number = indices.iter().map(|&index| 2_u32.pow(index as u32)).sum();
         BinaryNumber { number, nb_bits }
-    }
-
-    pub fn has_one_at(&self, position: usize) -> bool {
-        let mask = Self::ones_at(&[position], self.nb_bits);
-        self.number & mask.number > 0
-    }
-
-    pub fn has_zero_at(&self, position: usize) -> bool {
-        !self.has_one_at(position)
     }
 }
 
@@ -79,11 +76,29 @@ impl FromStr for BinaryNumber {
     }
 }
 
-
 impl Mul for BinaryNumber {
     type Output = u32;
     fn mul(self, rhs: Self) -> Self::Output {
         self.number * rhs.number
+    }
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub enum Bit {
+    Zero,
+    One,
+}
+
+impl Index<usize> for BinaryNumber {
+    type Output = Bit;
+
+    fn index(&self, index: usize) -> &Bit {
+        let mask = Self::ones_at(&[index], self.nb_bits);
+        if self.number & mask.number > 0 {
+            &Bit::One
+        } else {
+            &Bit::Zero
+        }
     }
 }
 
@@ -106,8 +121,8 @@ mod tests {
     #[test]
     fn can_check_if_binary_number_has_one_at_position() {
         let number = BinaryNumber { number: 0b1000, nb_bits: 4 };
-        assert!(number.has_one_at(3));
-        assert!(!number.has_one_at(2));
+        assert_eq!(number[3], Bit::One);
+        assert_eq!(number[2], Bit::Zero);
     }
 
     #[test]
@@ -118,7 +133,7 @@ mod tests {
             BinaryNumber::from_str("011").unwrap(),
         ]);
 
-        let result = numbers.most_common_bits();
+        let result = numbers.create_number(|nb_ones, nb_zeros| nb_ones > nb_zeros);
 
         assert_eq!(result, BinaryNumber::from_str("101").unwrap());
     }

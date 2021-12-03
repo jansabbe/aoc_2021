@@ -1,36 +1,20 @@
 mod domain;
-
-use domain::{BinaryNumber};
-use crate::domain::BinaryNumberList;
+use domain::{BinaryNumber, BinaryNumberList};
 
 pub fn calculate_power_consumption(contents: &str) -> u32 {
     let list = get_binary_numbers(contents);
-    let gamma_rate = list.most_common_bits();
-    let epsilon_rate = list.least_common_bits();
+    let gamma_rate = list.create_number(|nb_ones, nb_zeros| nb_ones > nb_zeros);
+    let epsilon_rate = list.create_number(|nb_ones, nb_zeros| nb_ones < nb_zeros);
     gamma_rate * epsilon_rate
 }
 
 pub fn calculate_life_support_rating(contents: &str) -> u32 {
     let list = get_binary_numbers(contents);
-    let oxygen_generator = find_number(&list, |nb_ones, nb_zeros| nb_ones >= nb_zeros);
-    let co2_scrubber = find_number(&list, |nb_ones, nb_zeros| nb_ones < nb_zeros);
+    let oxygen_generator = list.find(|nb_ones, nb_zeros| nb_ones >= nb_zeros);
+    let co2_scrubber = list.find(|nb_ones, nb_zeros| nb_ones < nb_zeros);
     oxygen_generator * co2_scrubber
 }
 
-fn find_number(number_list: &BinaryNumberList, keep_one_if: fn(usize, usize) -> bool) -> BinaryNumber {
-    let mut list = number_list.clone();
-    for position in (0..list.nb_bits).rev() {
-        if list.numbers.len() == 1 {
-            break;
-        }
-        if keep_one_if(list.nb_ones_at(position), list.nb_zeros_at(position)) {
-            list.retain(|number| number.has_one_at(position));
-        } else {
-            list.retain(|number| number.has_zero_at(position));
-        }
-    }
-    list.numbers[0]
-}
 
 fn get_binary_numbers(contents: &str) -> BinaryNumberList {
     BinaryNumberList::new(contents
