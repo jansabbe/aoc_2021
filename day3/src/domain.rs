@@ -1,6 +1,6 @@
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::Debug;
 use std::num::ParseIntError;
-use std::ops::{BitAnd, BitOr, BitXor, Mul, Not};
+use std::ops::Mul;
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -17,27 +17,22 @@ impl BinaryNumberList {
         }
     }
 
-    pub fn retain<F>(&mut self, predicate:F) where F: FnMut(&BinaryNumber) -> bool {
+    pub fn retain<F>(&mut self, predicate: F) where F: FnMut(&BinaryNumber) -> bool {
         self.numbers.retain(predicate);
     }
 
     pub fn most_common_bits(&self) -> BinaryNumber {
-        let zero = BinaryNumber::zeros(self.nb_bits);
-        (0..self.nb_bits).fold(zero, |result, pos| {
-            result | self.most_common_bit_at(pos)
-        })
+        let positions: Vec<usize> = (0..self.nb_bits)
+            .filter(|position| self.nb_ones_at(*position) > self.nb_zeros_at(*position))
+            .collect();
+        BinaryNumber::ones_at(&positions, self.nb_bits)
     }
 
     pub fn least_common_bits(&self) -> BinaryNumber {
-        !self.most_common_bits()
-    }
-
-    fn most_common_bit_at(&self, position: usize) -> BinaryNumber {
-        if self.nb_ones_at(position) > self.nb_zeros_at(position) {
-            BinaryNumber::one_at_position(position, self.nb_bits)
-        } else {
-            BinaryNumber::zeros(self.nb_bits)
-        }
+        let positions: Vec<usize> = (0..self.nb_bits)
+            .filter(|position| self.nb_ones_at(*position) < self.nb_zeros_at(*position))
+            .collect();
+        BinaryNumber::ones_at(&positions, self.nb_bits)
     }
 
     pub fn nb_zeros_at(&self, position: usize) -> usize {
@@ -60,23 +55,16 @@ impl BinaryNumber {
         BinaryNumber { number, nb_bits }
     }
 
-    pub fn ones(nb_bits: usize) -> BinaryNumber {
-        let number = (0..nb_bits).fold(0, |sum, pos| sum + 2_u32.pow(pos as u32));
+    pub fn ones_at(positions: &[usize], nb_bits: usize) -> BinaryNumber {
+        let number = positions.iter().map(|&position| 2_u32.pow(position as u32)).sum();
         BinaryNumber { number, nb_bits }
     }
 
-    pub fn zeros(nb_bits: usize) -> BinaryNumber {
-        !Self::ones(nb_bits)
-    }
-
-    pub fn one_at_position(position: usize, nb_bits: usize) -> BinaryNumber {
-        BinaryNumber { number: 2_u32.pow(position as u32), nb_bits }
-    }
-
     pub fn has_one_at(&self, position: usize) -> bool {
-        let mask = Self::one_at_position(position, self.nb_bits);
+        let mask = Self::ones_at(&[position], self.nb_bits);
         self.number & mask.number > 0
     }
+
     pub fn has_zero_at(&self, position: usize) -> bool {
         !self.has_one_at(position)
     }
@@ -95,50 +83,11 @@ impl FromStr for BinaryNumber {
     }
 }
 
-impl BitAnd for BinaryNumber {
-    type Output = BinaryNumber;
-    fn bitand(self, rhs: Self) -> Self::Output {
-        debug_assert_eq!(self.nb_bits, rhs.nb_bits);
-        BinaryNumber { nb_bits: self.nb_bits, number: self.number & rhs.number }
-    }
-}
-
-impl BitOr for BinaryNumber {
-    type Output = BinaryNumber;
-    fn bitor(self, rhs: Self) -> Self::Output {
-        debug_assert_eq!(self.nb_bits, rhs.nb_bits);
-        BinaryNumber { nb_bits: self.nb_bits, number: self.number | rhs.number }
-    }
-}
-
-
-impl BitXor for BinaryNumber {
-    type Output = BinaryNumber;
-    fn bitxor(self, rhs: Self) -> Self::Output {
-        debug_assert_eq!(self.nb_bits, rhs.nb_bits);
-        BinaryNumber { nb_bits: self.nb_bits, number: self.number ^ rhs.number }
-    }
-}
-
-impl Not for BinaryNumber {
-    type Output = BinaryNumber;
-    fn not(self) -> Self::Output {
-        self ^ BinaryNumber::ones(self.nb_bits)
-    }
-}
 
 impl Mul for BinaryNumber {
     type Output = u32;
-
     fn mul(self, rhs: Self) -> Self::Output {
         self.number * rhs.number
-    }
-}
-
-
-impl Display for BinaryNumber {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:0width$b}", self.number, width = self.nb_bits)
     }
 }
 
@@ -155,8 +104,8 @@ mod tests {
 
     #[test]
     fn can_create_binary_number_with_one_at_position() {
-        let result = BinaryNumber::one_at_position(3, 4);
-        assert_eq!(result, BinaryNumber::new(0b1000, 4))
+        let result = BinaryNumber::ones_at(&[3, 1], 4);
+        assert_eq!(result, BinaryNumber::new(0b1010, 4))
     }
 
     #[test]
@@ -164,17 +113,6 @@ mod tests {
         let number = BinaryNumber::new(0b1000, 4);
         assert!(number.has_one_at(3));
         assert!(!number.has_one_at(2));
-    }
-
-    #[test]
-    fn can_use_operators_with_binary_numbers() {
-        let first = BinaryNumber::from_str("1100").unwrap();
-        let second = BinaryNumber::from_str("1010").unwrap();
-
-        assert_eq!(first & second, BinaryNumber::from_str("1000").unwrap());
-        assert_eq!(first | second, BinaryNumber::from_str("1110").unwrap());
-        assert_eq!(first ^ second, BinaryNumber::from_str("0110").unwrap());
-        assert_eq!(!first, BinaryNumber::from_str("0011").unwrap());
     }
 
     #[test]
