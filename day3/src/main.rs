@@ -1,11 +1,12 @@
 use std::{env, fs};
 use std::process::exit;
-use day3::calculate_power_consumption;
+use day3::{calculate_life_support_rating, calculate_power_consumption};
 
 fn main() {
     match parse_arguments(env::args()) {
         Ok(contents) => {
             println!("Power consumption: {}", calculate_power_consumption(&contents));
+            println!("life support rating: {}", calculate_life_support_rating(&contents));
         },
         Err(error) => {
             eprintln!("Error: {:?}", error);

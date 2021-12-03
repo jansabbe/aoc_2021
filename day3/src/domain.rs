@@ -17,6 +17,20 @@ impl BinaryNumberList {
         }
     }
 
+    pub fn filter_with_one_at_pos(&self, position: usize) -> BinaryNumberList {
+        BinaryNumberList {
+            nb_bits: self.nb_bits,
+            numbers: self.numbers.iter().filter(|b| b.has_one_at(position)).copied().collect(),
+        }
+    }
+
+    pub fn filter_with_zero_at_pos(&self, position: usize) -> BinaryNumberList {
+        BinaryNumberList {
+            nb_bits: self.nb_bits,
+            numbers: self.numbers.iter().filter(|b| b.has_zero_at(position)).copied().collect(),
+        }
+    }
+
     pub fn most_common_bits(&self) -> BinaryNumber {
         let zero = BinaryNumber::zeros(self.nb_bits);
         (0..self.nb_bits).fold(zero, |result, pos| {
@@ -29,13 +43,19 @@ impl BinaryNumberList {
     }
 
     fn most_common_bit_at(&self, position: usize) -> BinaryNumber {
-        let nb_ones = self.numbers.iter().filter(|b| b.has_one_at(position)).count();
-        let nb_zeros = self.numbers.len() - nb_ones;
-        if nb_ones > nb_zeros {
+        if self.nb_ones_at(position) > self.nb_zeros_at(position) {
             BinaryNumber::one_at_position(position, self.nb_bits)
         } else {
             BinaryNumber::zeros(self.nb_bits)
         }
+    }
+
+    pub fn nb_zeros_at(&self, position: usize) -> usize {
+        self.numbers.len() - self.nb_ones_at(position)
+    }
+
+    pub fn nb_ones_at(&self, position: usize) -> usize {
+        self.numbers.iter().filter(|b| b.has_one_at(position)).count()
     }
 }
 
@@ -66,6 +86,9 @@ impl BinaryNumber {
     pub fn has_one_at(&self, position: usize) -> bool {
         let mask = Self::one_at_position(position, self.nb_bits);
         self.number & mask.number > 0
+    }
+    pub fn has_zero_at(&self, position: usize) -> bool {
+        !self.has_one_at(position)
     }
 }
 
