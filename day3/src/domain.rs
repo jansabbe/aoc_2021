@@ -17,18 +17,8 @@ impl BinaryNumberList {
         }
     }
 
-    pub fn filter_with_one_at_pos(&self, position: usize) -> BinaryNumberList {
-        BinaryNumberList {
-            nb_bits: self.nb_bits,
-            numbers: self.numbers.iter().filter(|b| b.has_one_at(position)).copied().collect(),
-        }
-    }
-
-    pub fn filter_with_zero_at_pos(&self, position: usize) -> BinaryNumberList {
-        BinaryNumberList {
-            nb_bits: self.nb_bits,
-            numbers: self.numbers.iter().filter(|b| b.has_zero_at(position)).copied().collect(),
-        }
+    pub fn retain<F>(&mut self, predicate:F) where F: FnMut(&BinaryNumber) -> bool {
+        self.numbers.retain(predicate);
     }
 
     pub fn most_common_bits(&self) -> BinaryNumber {

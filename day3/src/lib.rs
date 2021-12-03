@@ -13,36 +13,37 @@ pub fn calculate_power_consumption(contents: &str) -> u32 {
 }
 
 pub fn calculate_life_support_rating(contents: &str) -> u32 {
-    let list = get_binary_numbers(contents);
-    oxygen_generator(list.clone()) * co2_scrubber(list)
+    oxygen_generator(contents) * co2_scrubber(contents)
 }
 
-fn co2_scrubber(list: BinaryNumberList) -> BinaryNumber {
-    let result = (0..list.nb_bits).rev().fold(list, |list, position| {
+fn co2_scrubber(contents: &str) -> BinaryNumber {
+    let mut list = get_binary_numbers(contents);
+    for position in (0..list.nb_bits).rev() {
         if list.numbers.len() == 1 {
-            list
-        } else if list.nb_ones_at(position) >= list.nb_zeros_at(position) {
-            list.filter_with_zero_at_pos(position)
-        } else {
-            list.filter_with_one_at_pos(position)
+            break
         }
-    });
-
-    result.numbers[0]
+        if list.nb_ones_at(position) >= list.nb_zeros_at(position) {
+            list.retain(|number| number.has_zero_at(position));
+        } else {
+            list.retain(|number| number.has_one_at(position));
+        }
+    }
+    list.numbers[0]
 }
 
-fn oxygen_generator(list: BinaryNumberList) -> BinaryNumber {
-    let result = (0..list.nb_bits).rev().fold(list, |list, position| {
+fn oxygen_generator(contents: &str) -> BinaryNumber {
+    let mut list = get_binary_numbers(contents);
+    for position in (0..list.nb_bits).rev() {
         if list.numbers.len() == 1 {
-            list
-        } else if list.nb_ones_at(position) >= list.nb_zeros_at(position) {
-            list.filter_with_one_at_pos(position)
-        } else {
-            list.filter_with_zero_at_pos(position)
+            break
         }
-    });
-
-    result.numbers[0]
+        if list.nb_ones_at(position) >= list.nb_zeros_at(position) {
+            list.retain(|number| number.has_one_at(position));
+        } else {
+            list.retain(|number| number.has_zero_at(position));
+        }
+    }
+    list.numbers[0]
 }
 
 fn get_binary_numbers(contents: &str) -> BinaryNumberList {
