@@ -3,7 +3,6 @@ mod domain;
 use domain::{BinaryNumber};
 use crate::domain::BinaryNumberList;
 
-
 pub fn calculate_power_consumption(contents: &str) -> u32 {
     let list = get_binary_numbers(contents);
     let gamma_rate = list.most_common_bits();
@@ -12,35 +11,27 @@ pub fn calculate_power_consumption(contents: &str) -> u32 {
 }
 
 pub fn calculate_life_support_rating(contents: &str) -> u32 {
-    oxygen_generator(contents) * co2_scrubber(contents)
+    let list = get_binary_numbers(contents);
+    let oxygen_generator = find_number(&list, |nb_ones, nb_zeros| nb_ones >= nb_zeros);
+    let co2_scrubber = find_number(&list, |nb_ones, nb_zeros| nb_ones < nb_zeros);
+    oxygen_generator * co2_scrubber
 }
 
-fn co2_scrubber(contents: &str) -> BinaryNumber {
-    let mut list = get_binary_numbers(contents);
+fn find_number(number_list: &BinaryNumberList, keep_one_if: fn(usize, usize) -> bool) -> BinaryNumber {
+    let mut list = number_list.clone();
     for position in (0..list.nb_bits).rev() {
         if list.numbers.len() == 1 {
-            break
+            break;
         }
-        if list.nb_ones_at(position) >= list.nb_zeros_at(position) {
-            list.retain(|number| number.has_zero_at(position));
-        } else {
-            list.retain(|number| number.has_one_at(position));
-        }
-    }
-    list.numbers[0]
-}
-
-fn oxygen_generator(contents: &str) -> BinaryNumber {
-    let mut list = get_binary_numbers(contents);
-    for position in (0..list.nb_bits).rev() {
-        if list.numbers.len() == 1 {
-            break
-        }
-        if list.nb_ones_at(position) >= list.nb_zeros_at(position) {
-            list.retain(|number| number.has_one_at(position));
-        } else {
-            list.retain(|number| number.has_zero_at(position));
-        }
+        let nb_ones = list.nb_ones_at(position);
+        let nb_zeros = list.nb_zeros_at(position);
+        list.retain(|number| {
+            if keep_one_if(nb_ones, nb_zeros) {
+                number.has_one_at(position)
+            } else {
+                number.has_zero_at(position)
+            }
+        });
     }
     list.numbers[0]
 }

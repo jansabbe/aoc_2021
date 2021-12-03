@@ -91,7 +91,6 @@ impl Mul for BinaryNumber {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
