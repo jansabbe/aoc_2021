@@ -51,10 +51,6 @@ pub struct BinaryNumber {
 }
 
 impl BinaryNumber {
-    fn new(number: u32, nb_bits: usize) -> BinaryNumber {
-        BinaryNumber { number, nb_bits }
-    }
-
     pub fn ones_at(positions: &[usize], nb_bits: usize) -> BinaryNumber {
         let number = positions.iter().map(|&position| 2_u32.pow(position as u32)).sum();
         BinaryNumber { number, nb_bits }
@@ -98,18 +94,18 @@ mod tests {
     #[test]
     fn can_convert_string_to_binary_number() {
         let result = BinaryNumber::from_str("01101").unwrap();
-        assert_eq!(result, BinaryNumber::new(0b1101, 5))
+        assert_eq!(result, BinaryNumber { number: 0b1101, nb_bits: 5 })
     }
 
     #[test]
     fn can_create_binary_number_with_one_at_position() {
         let result = BinaryNumber::ones_at(&[3, 1], 4);
-        assert_eq!(result, BinaryNumber::new(0b1010, 4))
+        assert_eq!(result, BinaryNumber { number: 0b1010, nb_bits: 4 })
     }
 
     #[test]
     fn can_check_if_binary_number_has_one_at_position() {
-        let number = BinaryNumber::new(0b1000, 4);
+        let number = BinaryNumber { number: 0b1000, nb_bits: 4 };
         assert!(number.has_one_at(3));
         assert!(!number.has_one_at(2));
     }

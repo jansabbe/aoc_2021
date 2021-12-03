@@ -23,15 +23,11 @@ fn find_number(number_list: &BinaryNumberList, keep_one_if: fn(usize, usize) -> 
         if list.numbers.len() == 1 {
             break;
         }
-        let nb_ones = list.nb_ones_at(position);
-        let nb_zeros = list.nb_zeros_at(position);
-        list.retain(|number| {
-            if keep_one_if(nb_ones, nb_zeros) {
-                number.has_one_at(position)
-            } else {
-                number.has_zero_at(position)
-            }
-        });
+        if keep_one_if(list.nb_ones_at(position), list.nb_zeros_at(position)) {
+            list.retain(|number| number.has_one_at(position));
+        } else {
+            list.retain(|number| number.has_zero_at(position));
+        }
     }
     list.numbers[0]
 }
