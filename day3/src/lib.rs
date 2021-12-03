@@ -1,6 +1,5 @@
 mod domain;
 
-use std::str::FromStr;
 use domain::{BinaryNumber};
 use crate::domain::BinaryNumberList;
 
