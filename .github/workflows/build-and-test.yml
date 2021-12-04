@@ -30,7 +30,7 @@ jobs:
             day*/input.txt
   solve:
     runs-on: ubuntu-latest
-    depends-on: check
+    needs: check
     steps:
       - uses: actions/download-artifact@v2
         with:
