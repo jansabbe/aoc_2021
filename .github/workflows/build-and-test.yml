@@ -23,7 +23,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     needs: check
     steps:
@@ -31,6 +31,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+          profile: minimal
           override: true
       - name: Release build
         run: cargo build --bins --release
@@ -41,3 +42,4 @@ jobs:
           if-no-files-found: error
           path: |
             target/release/day*
+            !target/release/*.d
