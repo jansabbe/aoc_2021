@@ -43,3 +43,4 @@ jobs:
           path: |
             target/release/day*
             !target/release/*.d
+            !target/release/*.pdb
