@@ -1,0 +1,22 @@
+name: Rust AOC
+on: [push]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: clippy
+      - name: Build
+        run: cargo build
+      - name: Code style
+        run: cargo clippy
+      - name: Test
+        run: cargo test
