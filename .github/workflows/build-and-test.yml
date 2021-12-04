@@ -15,8 +15,25 @@ jobs:
           override: true
           components: clippy
       - name: Build
-        run: cargo build
+        run: cargo build --release
       - name: Code style
         run: cargo clippy
       - name: Test
         run: cargo test
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: binaries
+          if-no-files-found: error
+          path: |
+            target/release/day*
+            day*/input.txt
+  solve:
+    runs-on: ubuntu-latest
+    depends-on: check
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: binaries
+      - name: Debug
+        run: ls -R
