@@ -21,14 +21,10 @@ jobs:
       - name: Test
         run: cargo test
   build:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        target:
-          - aarch64-apple-darwin
-          - x86_64-apple-darwin
-          - x86_64-pc-windows-gnu
-          - x86_64-unknown-linux-gnu
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     needs: check
     steps:
       - uses: actions/checkout@v2
@@ -36,13 +32,12 @@ jobs:
         with:
           toolchain: stable
           override: true
-          target: ${{ matrix.target }}
       - name: Release build
-        run: cargo build --bins --release --target ${{ matrix.target }}
+        run: cargo build --bins --release
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: binaries-${{ matrix.target }}
+          name: binaries-${{ matrix.os }}
           if-no-files-found: error
           path: |
             target/release/day*
