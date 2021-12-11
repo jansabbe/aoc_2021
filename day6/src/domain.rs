@@ -19,7 +19,7 @@ impl SchoolOFish {
     }
 
     pub fn simulate_day(&mut self) {
-        let [amount_fish_with_zero_left, _xs @ ..] = self.amount_of_fish_per_timer;
+        let [amount_fish_with_zero_left,..] = self.amount_of_fish_per_timer;
         self.amount_of_fish_per_timer.rotate_left(1);
         self.amount_of_fish_per_timer[6] += amount_fish_with_zero_left;
     }
