@@ -1,39 +1,19 @@
-fn calculate_part1(positions: &str) -> i32 {
-    let positions: Vec<i32> = positions
-        .split(',')
-        .filter_map(|p| p.trim().parse::<i32>().ok())
-        .collect();
+use crate::domain::CrabPositions;
 
-    calculate_distance_part1(&positions, statistical::median(&positions))
+mod domain;
+
+pub fn calculate_part1(input: &str) -> i32 {
+    let crab_positions: CrabPositions = input.parse().unwrap();
+    crab_positions.required_fuel_to_reach_simple(crab_positions.median())
 }
 
-fn calculate_distance_part1(positions: &[i32], target: i32) -> i32 {
-    positions.iter().map(|&pos| (pos - target).abs()).sum()
-}
+pub fn calculate_part2(input: &str) -> i32 {
+    let crab_positions: CrabPositions = input.parse().unwrap();
 
-fn calculate_part2(positions: &str) -> i32 {
-    let positions: Vec<i32> = positions
-        .split(',')
-        .filter_map(|p| p.trim().parse::<i32>().ok())
-        .collect();
-
-    let &from = positions.iter().min().unwrap();
-    let &to = positions.iter().max().unwrap();
-
-    (from..=to)
-        .map(|potential_target| calculate_distance_part2(&positions, potential_target))
+    (crab_positions.min()..=crab_positions.max())
+        .map(|potential_target| crab_positions.required_fuel_to_reach_power(potential_target))
         .min()
         .unwrap_or(0)
-}
-
-fn calculate_distance_part2(positions: &[i32], target: i32) -> i32 {
-    positions
-        .iter()
-        .map(|&pos| {
-            let steps = (pos - target).abs();
-            (steps * (steps + 1)) / 2 // Gauss formula for 1 + 2 + 3 + ... steps
-        })
-        .sum()
 }
 
 #[cfg(test)]
@@ -51,13 +31,6 @@ mod tests {
         let input = include_str!("../input.txt");
         let distance = calculate_part1(input);
         assert_eq!(distance, 336120)
-    }
-
-    #[test]
-    fn test_calculate_distance_part2() {
-        let positions = vec![16, 1, 2, 0, 4, 2, 7, 1, 2, 14];
-        assert_eq!(calculate_distance_part2(&positions, 5), 168);
-        assert_eq!(calculate_distance_part2(&positions, 2), 206);
     }
 
     #[test]
