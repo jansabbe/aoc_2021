@@ -30,6 +30,6 @@ mod tests {
         0,0 -> 8,8\n\
         5,5 -> 8,2\n";
 
-        assert_eq!(get_number_of_overlapping_lines(contents), 5);
+        assert_eq!(get_number_of_overlapping_lines(contents), 12);
     }
 }

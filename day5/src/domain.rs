@@ -1,4 +1,3 @@
-use std::cmp::{min, max};
 use std::str::FromStr;
 
 #[derive(Eq, PartialEq, Debug, Ord, PartialOrd, Clone, Copy)]
@@ -8,17 +7,19 @@ impl FromStr for Point {
     type Err = ();
 
     fn from_str(str: &str) -> Result<Self, Self::Err> {
-        if let Some(point) = str.split_once(',') {
-            let x: usize = point.0.parse().map_err(|_| ())?;
-            let y: usize = point.1.parse().map_err(|_| ())?;
-            return Ok(Point(x, y));
-        }
-        Err(())
+        let (x, y) = str.split_once(',').ok_or(())?;
+        let x: usize = x.parse().or(Err(()))?;
+        let y: usize = y.parse().or(Err(()))?;
+        return Ok(Point(x, y));
     }
 }
 
 fn range(a: usize, b: usize) -> Box<dyn Iterator<Item=usize>> {
-    if a < b { Box::new(a..=b) } else { Box::new((b..=a).rev()) }
+    if a < b {
+        Box::new(a..=b)
+    } else {
+        Box::new((b..=a).rev())
+    }
 }
 
 #[derive(Eq, PartialEq, Debug)]
@@ -28,11 +29,8 @@ pub struct Line {
 }
 
 impl Line {
-    pub fn new(a: Point, b: Point) -> Line {
-        Line {
-            from: min(a, b),
-            to: max(a, b),
-        }
+    pub fn new(from: Point, to: Point) -> Line {
+        Line { from, to }
     }
 
     fn points(&self) -> Vec<Point> {
@@ -40,15 +38,12 @@ impl Line {
         let Point(x2, y2) = self.to;
 
         if y1 == y2 {
-            range(x1, x2)
-                .map(|x| Point(x, y1))
-                .collect()
+            range(x1, x2).map(move |x| Point(x, y1)).collect()
         } else if x1 == x2 {
-            range(y1, y2)
-                .map(|y| Point(x1, y))
-                .collect()
+            range(y1, y2).map(move |y| Point(x1, y)).collect()
         } else {
-            range(x1, x2).zip(range(y1, y2))
+            range(x1, x2)
+                .zip(range(y1, y2))
                 .map(|(x, y)| Point(x, y))
                 .collect()
         }
@@ -59,12 +54,10 @@ impl FromStr for Line {
     type Err = ();
 
     fn from_str(line_str: &str) -> Result<Self, Self::Err> {
-        if let Some(line) = line_str.split_once(" -> ") {
-            let point1: Point = line.0.parse().map_err(|_| ())?;
-            let point2: Point = line.1.parse().map_err(|_| ())?;
-            return Ok(Line::new(point1, point2));
-        }
-        Err(())
+        let (from, to) = line_str.split_once(" -> ").ok_or(())?;
+        let from: Point = from.parse().or(Err(()))?;
+        let to: Point = to.parse().or(Err(()))?;
+        return Ok(Line::new(from, to));
     }
 }
 
@@ -97,9 +90,9 @@ mod tests {
     fn test_points_in_horizontal_line() {
         let line = Line::new(Point(9, 7), Point(7, 7));
         let result = vec![
-            Point(7, 7),
-            Point(8, 7),
             Point(9, 7),
+            Point(8, 7),
+            Point(7, 7),
         ];
         assert_eq!(result, line.points());
     }
@@ -132,9 +125,9 @@ mod tests {
     fn test_points_in_45_line_direction() {
         let line = Line::new(Point(3, 1), Point(1, 3));
         let result = vec![
-            Point(1, 3),
-            Point(2, 2),
             Point(3, 1),
+            Point(2, 2),
+            Point(1, 3),
         ];
         assert_eq!(result, line.points());
     }
