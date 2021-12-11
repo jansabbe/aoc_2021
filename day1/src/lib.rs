@@ -23,7 +23,7 @@ fn count_increases(measurements: &[i32]) -> usize {
         .windows(2)
         .filter(|window| match window {
             [current, next] if current < next => true,
-            _ => false
+            _ => false,
         })
         .count()
 }

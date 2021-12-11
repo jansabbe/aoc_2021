@@ -3,10 +3,12 @@ mod domain;
 use domain::Board;
 use domain::Line;
 
-
 pub fn get_number_of_overlapping_lines(contents: &str) -> usize {
     let mut board = Board::new();
-    let lines: Vec<Line> = contents.lines().filter_map(|line| line.parse().ok()).collect();
+    let lines: Vec<Line> = contents
+        .lines()
+        .filter_map(|line| line.parse().ok())
+        .collect();
     for line in lines {
         board.draw(line);
     }

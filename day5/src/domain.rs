@@ -14,7 +14,7 @@ impl FromStr for Point {
     }
 }
 
-fn range(a: usize, b: usize) -> Box<dyn Iterator<Item=usize>> {
+fn range(a: usize, b: usize) -> Box<dyn Iterator<Item = usize>> {
     if a < b {
         Box::new(a..=b)
     } else {
@@ -68,7 +68,9 @@ pub struct Board {
 
 impl Board {
     pub fn new() -> Self {
-        Board { dots: vec![vec![0; 1000]; 1000] }
+        Board {
+            dots: vec![vec![0; 1000]; 1000],
+        }
     }
 
     pub fn draw(&mut self, line: Line) {
@@ -89,49 +91,30 @@ mod tests {
     #[test]
     fn test_points_in_horizontal_line() {
         let line = Line::new(Point(9, 7), Point(7, 7));
-        let result = vec![
-            Point(9, 7),
-            Point(8, 7),
-            Point(7, 7),
-        ];
+        let result = vec![Point(9, 7), Point(8, 7), Point(7, 7)];
         assert_eq!(result, line.points());
     }
 
     #[test]
     fn test_points_in_vertical_line() {
         let line = Line::new(Point(1, 1), Point(1, 3));
-        let result = vec![
-            Point(1, 1),
-            Point(1, 2),
-            Point(1, 3),
-        ];
+        let result = vec![Point(1, 1), Point(1, 2), Point(1, 3)];
         assert_eq!(result, line.points());
     }
-
 
     #[test]
     fn test_points_in_45_line() {
         let line = Line::new(Point(1, 1), Point(3, 3));
-        let result = vec![
-            Point(1, 1),
-            Point(2, 2),
-            Point(3, 3),
-        ];
+        let result = vec![Point(1, 1), Point(2, 2), Point(3, 3)];
         assert_eq!(result, line.points());
     }
-
 
     #[test]
     fn test_points_in_45_line_direction() {
         let line = Line::new(Point(3, 1), Point(1, 3));
-        let result = vec![
-            Point(3, 1),
-            Point(2, 2),
-            Point(1, 3),
-        ];
+        let result = vec![Point(3, 1), Point(2, 2), Point(1, 3)];
         assert_eq!(result, line.points());
     }
-
 
     #[test]
     fn test_drawing() {

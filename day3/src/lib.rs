@@ -15,12 +15,12 @@ pub fn calculate_life_support_rating(contents: &str) -> u32 {
     oxygen_generator * co2_scrubber
 }
 
-
 fn get_binary_numbers(contents: &str) -> BinaryNumberList {
-    BinaryNumberList::new(contents
-        .lines()
-        .filter_map(|line| line.parse::<BinaryNumber>().ok())
-        .collect()
+    BinaryNumberList::new(
+        contents
+            .lines()
+            .filter_map(|line| line.parse::<BinaryNumber>().ok())
+            .collect(),
     )
 }
 

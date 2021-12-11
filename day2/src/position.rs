@@ -8,7 +8,11 @@ pub struct Position {
 
 impl Position {
     pub fn start() -> Position {
-        Position { horizontal: 0, depth: 0, aim: 0 }
+        Position {
+            horizontal: 0,
+            depth: 0,
+            aim: 0,
+        }
     }
 
     pub fn apply(&self, movement: &Movement) -> Self {
@@ -18,8 +22,14 @@ impl Position {
                 depth: self.depth + self.aim * forward,
                 ..*self
             },
-            Movement::Up(up) => Position { aim: self.aim - up, ..*self },
-            Movement::Down(down) => Position { aim: self.aim + down, ..*self },
+            Movement::Up(up) => Position {
+                aim: self.aim - up,
+                ..*self
+            },
+            Movement::Down(down) => Position {
+                aim: self.aim + down,
+                ..*self
+            },
         }
     }
 

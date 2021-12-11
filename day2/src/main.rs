@@ -1,6 +1,6 @@
-use std::{env, fs};
-use std::process::exit;
 use day2::track_submarine;
+use std::process::exit;
+use std::{env, fs};
 
 fn main() {
     let result = match parse_arguments(env::args()) {
@@ -17,7 +17,7 @@ fn main() {
 #[derive(Debug)]
 enum Error {
     NoFilename,
-    CannotRead
+    CannotRead,
 }
 
 fn parse_arguments(mut args: env::Args) -> Result<String, Error> {

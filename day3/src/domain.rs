@@ -45,7 +45,11 @@ impl BinaryNumberList {
     }
 
     fn count_at(&self, index: usize) -> (usize, usize) {
-        let nb_ones = self.numbers.iter().filter(|binary| binary[index] == Bit::One).count();
+        let nb_ones = self
+            .numbers
+            .iter()
+            .filter(|binary| binary[index] == Bit::One)
+            .count();
         (nb_ones, self.numbers.len() - nb_ones)
     }
 }
@@ -109,18 +113,33 @@ mod tests {
     #[test]
     fn can_convert_string_to_binary_number() {
         let result = BinaryNumber::from_str("01101").unwrap();
-        assert_eq!(result, BinaryNumber { number: 0b1101, nb_bits: 5 })
+        assert_eq!(
+            result,
+            BinaryNumber {
+                number: 0b1101,
+                nb_bits: 5
+            }
+        )
     }
 
     #[test]
     fn can_create_binary_number_with_one_at_position() {
         let result = BinaryNumber::ones_at(&[3, 1], 4);
-        assert_eq!(result, BinaryNumber { number: 0b1010, nb_bits: 4 })
+        assert_eq!(
+            result,
+            BinaryNumber {
+                number: 0b1010,
+                nb_bits: 4
+            }
+        )
     }
 
     #[test]
     fn can_check_if_binary_number_has_one_at_position() {
-        let number = BinaryNumber { number: 0b1000, nb_bits: 4 };
+        let number = BinaryNumber {
+            number: 0b1000,
+            nb_bits: 4,
+        };
         assert_eq!(number[3], Bit::One);
         assert_eq!(number[2], Bit::Zero);
     }

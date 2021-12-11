@@ -6,15 +6,14 @@ use position::Position;
 
 pub fn track_submarine(contents: &str) -> i32 {
     let movements = get_movements(contents);
-    let final_position = movements
-        .fold(Position::start(), |position, movement| position.apply(&movement));
+    let final_position = movements.fold(Position::start(), |position, movement| {
+        position.apply(&movement)
+    });
     final_position.result()
 }
 
-fn get_movements<'a>(contents: &'a str) -> impl Iterator<Item=Movement> + 'a {
-    contents
-        .lines()
-        .filter_map(|line| line.parse().ok())
+fn get_movements<'a>(contents: &'a str) -> impl Iterator<Item = Movement> + 'a {
+    contents.lines().filter_map(|line| line.parse().ok())
 }
 
 #[cfg(test)]

@@ -1,6 +1,6 @@
-use std::{env, fs};
-use std::process::exit;
 use day1::count_depth;
+use std::process::exit;
+use std::{env, fs};
 
 fn main() {
     let result = match parse_arguments(env::args()) {
@@ -10,7 +10,7 @@ fn main() {
             exit(1);
         }
     };
-    
+
     println!("Solution: {}", result);
 }
 
@@ -20,11 +20,15 @@ struct Error {
 
 impl Error {
     fn no_filename() -> Error {
-        Error { message: String::from("Expected filename as first argument") }
+        Error {
+            message: String::from("Expected filename as first argument"),
+        }
     }
 
     fn cannot_read(filename: &str, error: &std::io::Error) -> Error {
-        Error { message: format!("Cannot read file {} because {}", filename, error) }
+        Error {
+            message: format!("Cannot read file {} because {}", filename, error),
+        }
     }
 }
 
@@ -38,7 +42,7 @@ fn parse_arguments(mut args: env::Args) -> Result<(String, usize), Error> {
 
     let contents = match fs::read_to_string(&filename) {
         Ok(arg) => arg,
-        Err(error) => return Err(Error::cannot_read(&filename, &error))
+        Err(error) => return Err(Error::cannot_read(&filename, &error)),
     };
 
     let window_size = match args.next().and_then(|f| f.parse().ok()) {

@@ -20,7 +20,7 @@ impl FromStr for Movement {
             "forward" => Ok(Self::Forward(delta)),
             "up" => Ok(Self::Up(delta)),
             "down" => Ok(Self::Down(delta)),
-            _ => Err(Self::Err::UnknownCommand)
+            _ => Err(Self::Err::UnknownCommand),
         }
     }
 }

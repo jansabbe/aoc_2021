@@ -18,11 +18,11 @@ pub fn calculate_winning_score(contents: &str) -> u32 {
 
 pub fn calculate_losing_score(contents: &str) -> u32 {
     let (drawn_numbers, mut boards) = parse_input(contents);
-    let mut winning_scores:Vec<u32> = Vec::new();
+    let mut winning_scores: Vec<u32> = Vec::new();
     for drawn_number in drawn_numbers {
         for board in &mut boards {
             if board.is_bingo() {
-                continue
+                continue;
             }
 
             board.mark(drawn_number);
@@ -37,8 +37,14 @@ pub fn calculate_losing_score(contents: &str) -> u32 {
 
 fn parse_input(contents: &str) -> (Vec<u32>, Vec<BingoBoard>) {
     let game: Vec<&str> = contents.splitn(2, "\n\n").collect();
-    let drawn_numbers: Vec<u32> = game[0].split(',').filter_map(|n| n.parse::<u32>().ok()).collect();
-    let boards: Vec<BingoBoard> = game[1].split("\n\n").filter_map(|s| s.parse::<BingoBoard>().ok()).collect();
+    let drawn_numbers: Vec<u32> = game[0]
+        .split(',')
+        .filter_map(|n| n.parse::<u32>().ok())
+        .collect();
+    let boards: Vec<BingoBoard> = game[1]
+        .split("\n\n")
+        .filter_map(|s| s.parse::<BingoBoard>().ok())
+        .collect();
     (drawn_numbers, boards)
 }
 
@@ -95,5 +101,4 @@ mod tests {
         let result = calculate_losing_score(contents);
         assert_eq!(result, 1924)
     }
-
 }
