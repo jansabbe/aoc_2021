@@ -21,10 +21,7 @@ fn calculate_sliding_sums(measurements: &[i32], window_size: usize) -> Vec<i32> 
 fn count_increases(measurements: &[i32]) -> usize {
     measurements
         .windows(2)
-        .filter(|window| match window {
-            [current, next] if current < next => true,
-            _ => false,
-        })
+        .filter(|window| matches!(window, [current, next] if current < next))
         .count()
 }
 
