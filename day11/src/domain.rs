@@ -65,8 +65,7 @@ impl Grid {
     fn octopus_that_will_flash(&self) -> Option<Position> {
         self.size()
             .all_positions()
-            .filter(|pos| self[*pos] == WillFlash)
-            .next()
+            .find(|pos| self[*pos] == WillFlash)
     }
 
     fn is_all_zero(&self) -> bool {
