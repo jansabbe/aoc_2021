@@ -1,4 +1,4 @@
-use crate::domain::grid_size::{GridSize, Position};
+use crate::domain::grid_size::{Position, Positions};
 use crate::domain::octopus::Octopus;
 use crate::domain::octopus::Octopus::{Flashed, GainingEnergy, WillFlash};
 use std::ops::{Index, IndexMut};
@@ -25,26 +25,22 @@ impl Grid {
             self.flash(position);
         }
         self.nb_flashes += self
-            .size()
-            .all_positions()
+            .positions()
+            .all()
             .filter(|&pos| self[pos] == Flashed)
             .count();
     }
 
     fn increase_all(&mut self) {
-        self.size()
-            .all_positions()
-            .for_each(|pos| self[pos].increase())
+        self.positions().all().for_each(|pos| self[pos].increase())
     }
 
     fn reset_all(&mut self) {
-        self.size()
-            .all_positions()
-            .for_each(|pos| self[pos].reset())
+        self.positions().all().for_each(|pos| self[pos].reset())
     }
 
-    fn size(&self) -> GridSize {
-        GridSize {
+    fn positions(&self) -> Positions {
+        Positions {
             max_rows: self.value.len() as i32,
             max_columns: self.value[0].len() as i32,
         }
@@ -57,20 +53,18 @@ impl Grid {
             if self[current] != Flashed {
                 self[current].increase();
                 if self[current] == Flashed {
-                    positions_to_increase.append(&mut self.size().adjacent_positions(current))
+                    positions_to_increase.append(&mut self.positions().adjacent(current))
                 }
             }
         }
     }
     fn octopus_that_will_flash(&self) -> Option<Position> {
-        self.size()
-            .all_positions()
-            .find(|pos| self[*pos] == WillFlash)
+        self.positions().all().find(|pos| self[*pos] == WillFlash)
     }
 
     fn is_all_zero(&self) -> bool {
-        self.size()
-            .all_positions()
+        self.positions()
+            .all()
             .all(|pos| self[pos] == GainingEnergy(0))
     }
 }

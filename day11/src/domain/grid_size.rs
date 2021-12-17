@@ -21,17 +21,17 @@ impl Add for Position {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub struct GridSize {
+pub struct Positions {
     pub max_rows: i32,
     pub max_columns: i32,
 }
 
-impl GridSize {
+impl Positions {
     pub fn contains(&self, &Position { row, column }: &Position) -> bool {
         row >= 0 && column >= 0 && row < self.max_rows && column < self.max_columns
     }
 
-    pub fn adjacent_positions(&self, position: Position) -> Vec<Position> {
+    pub fn adjacent(&self, position: Position) -> Vec<Position> {
         [
             Position::new(-1, -1),
             Position::new(-1, 0),
@@ -48,7 +48,7 @@ impl GridSize {
         .collect()
     }
 
-    pub fn all_positions(&self) -> impl Iterator<Item = Position> + '_ {
+    pub fn all(&self) -> impl Iterator<Item = Position> + '_ {
         (0..self.max_rows).flat_map(move |row| {
             (0..self.max_columns).map(move |column| Position::new(row, column))
         })
