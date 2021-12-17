@@ -5,11 +5,16 @@ mod signal;
 use signal::Signal;
 
 trait SignalFinder {
-    fn take<P>(&mut self, predicate: P) -> Signal where P: Fn(&Signal) -> bool;
+    fn take<P>(&mut self, predicate: P) -> Signal
+    where
+        P: Fn(&Signal) -> bool;
 }
 
 impl SignalFinder for Vec<Signal> {
-    fn take<P>(&mut self, predicate: P) -> Signal where P: Fn(&Signal) -> bool {
+    fn take<P>(&mut self, predicate: P) -> Signal
+    where
+        P: Fn(&Signal) -> bool,
+    {
         let index = self.iter().position(predicate).unwrap();
         let result = self[index];
         self.remove(index);
@@ -29,11 +34,8 @@ impl Observation {
         let seven = signals.take(|seven| seven.count_segments() == 3);
         let eight = signals.take(|eight| eight.count_segments() == 7);
         let three = signals.take(|three| three.count_segments() == 5 && three.includes(seven));
-        let nine = signals.take(|nine| {
-            nine.count_segments() == 6
-                && nine.includes(three)
-                && nine.includes(four)
-        });
+        let nine = signals
+            .take(|nine| nine.count_segments() == 6 && nine.includes(three) && nine.includes(four));
         let zero = signals.take(|zero| {
             zero.count_segments() == 6
                 && zero.includes(seven)
@@ -44,23 +46,13 @@ impl Observation {
         let five = signals.take(|five| five.count_segments() == 5 && *five + one == nine);
         Observation {
             outputs,
-            signals: [
-                zero,
-                one,
-                two,
-                three,
-                four,
-                five,
-                six,
-                seven,
-                eight,
-                nine
-            ],
+            signals: [zero, one, two, three, four, five, six, seven, eight, nine],
         }
     }
 
     pub fn output(&self) -> usize {
-        let numbers: Vec<String> = self.outputs
+        let numbers: Vec<String> = self
+            .outputs
             .iter()
             .map(|&s| self.value_for_signal(s).to_string())
             .collect();
@@ -77,17 +69,28 @@ impl FromStr for Observation {
 
     fn from_str(line: &str) -> Result<Self, Self::Err> {
         let (signals, outputs) = line.split_once(" | ").ok_or(())?;
-        Ok(
-            Observation::new(signals.split_whitespace().filter_map(|s| s.parse().ok()).collect(),
-                             outputs.split_whitespace().filter_map(|s| s.parse().ok()).collect())
-        )
+        Ok(Observation::new(
+            signals
+                .split_whitespace()
+                .filter_map(|s| s.parse().ok())
+                .collect(),
+            outputs
+                .split_whitespace()
+                .filter_map(|s| s.parse().ok())
+                .collect(),
+        ))
     }
 }
 
 pub fn count_uniques(ob: &Observation) -> usize {
     ob.outputs
         .iter()
-        .filter(|p| p.count_segments() == 2 || p.count_segments() == 4 || p.count_segments() == 3 || p.count_segments() == 7)
+        .filter(|p| {
+            p.count_segments() == 2
+                || p.count_segments() == 4
+                || p.count_segments() == 3
+                || p.count_segments() == 7
+        })
         .count()
 }
 
@@ -103,7 +106,6 @@ mod tests {
         assert_eq!(observation.outputs[2], observation.signals[5]);
         assert_eq!(observation.outputs[3], observation.signals[3]);
     }
-
 
     #[test]
     fn test_observation_output() {

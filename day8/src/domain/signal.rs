@@ -42,16 +42,17 @@ impl FromStr for Signal {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Signal(s.chars().fold(encoding::ZERO as u8, |acc, c| {
-            return acc | match c {
-                'a' => encoding::A,
-                'b' => encoding::B,
-                'c' => encoding::C,
-                'd' => encoding::D,
-                'e' => encoding::E,
-                'f' => encoding::F,
-                'g' => encoding::G,
-                _ => encoding::ZERO,
-            };
+            return acc
+                | match c {
+                    'a' => encoding::A,
+                    'b' => encoding::B,
+                    'c' => encoding::C,
+                    'd' => encoding::D,
+                    'e' => encoding::E,
+                    'f' => encoding::F,
+                    'g' => encoding::G,
+                    _ => encoding::ZERO,
+                };
         })))
     }
 }
@@ -67,5 +68,4 @@ mod tests {
         assert!(signal1.includes(signal2));
         assert!(!signal2.includes(signal1));
     }
-
 }

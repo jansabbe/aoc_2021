@@ -3,24 +3,24 @@ use crate::domain::{count_uniques, Observation};
 mod domain;
 
 fn counter(example: &str) -> usize {
-    let observations: Vec<Observation> = example.lines().filter_map(|l| l.parse::<Observation>().ok()).collect();
-    observations
-        .iter()
-        .map(count_uniques)
-        .sum()
+    let observations: Vec<Observation> = example
+        .lines()
+        .filter_map(|l| l.parse::<Observation>().ok())
+        .collect();
+    observations.iter().map(count_uniques).sum()
 }
 
 fn sum(example: &str) -> usize {
-    let observations: Vec<Observation> = example.lines().filter_map(|l| l.parse::<Observation>().ok()).collect();
-    observations
-        .iter()
-        .map(|o| o.output())
-        .sum()
+    let observations: Vec<Observation> = example
+        .lines()
+        .filter_map(|l| l.parse::<Observation>().ok())
+        .collect();
+    observations.iter().map(|o| o.output()).sum()
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{counter,sum};
+    use crate::{counter, sum};
 
     #[test]
     fn test_first_example() {
@@ -38,7 +38,6 @@ mod tests {
         assert_eq!(counter(example), 26);
     }
 
-
     #[test]
     fn test_second_example() {
         let example = "\
@@ -54,7 +53,6 @@ mod tests {
         gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce\n\n";
         assert_eq!(sum(example), 61229);
     }
-
 
     #[test]
     fn test_first() {
