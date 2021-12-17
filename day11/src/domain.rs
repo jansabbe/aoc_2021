@@ -2,7 +2,7 @@ use std::ops::{Index, IndexMut};
 use std::str::FromStr;
 use crate::domain::grid_size::{GridSize, Position};
 use crate::domain::octopus::Octopus;
-use crate::domain::octopus::Octopus::{Flashed, WillFlash};
+use crate::domain::octopus::Octopus::{Flashed, GainingEnergy, WillFlash};
 
 mod octopus;
 mod grid_size;
@@ -57,6 +57,10 @@ impl Grid {
     }
     fn octopus_that_will_flash(&self) -> Option<Position> {
         self.size().all_positions().filter(|pos| self[*pos] == WillFlash).next()
+    }
+
+    fn is_all_zero(&self) -> bool {
+        self.size().all_positions().all(|pos| self[pos] == GainingEnergy(0))
     }
 }
 
@@ -140,5 +144,17 @@ mod tests {
         (0..100).for_each(|_| grid.step());
         assert_eq!(grid.nb_flashes, 1691)
 
+    }
+
+    #[test]
+    fn part2() {
+        let input = include_str!("../input.txt");
+        let mut grid: Grid = input.parse().unwrap();
+        let mut  step = 0;
+        while !grid.is_all_zero() {
+            grid.step();
+            step += 1;
+        }
+        assert_eq!(step, 216)
     }
 }
