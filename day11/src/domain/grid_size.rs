@@ -31,7 +31,6 @@ impl GridSize {
         row >= 0 && column >= 0 && row < self.max_rows && column < self.max_columns
     }
 
-
     pub fn adjacent_positions(&self, position: Position) -> Vec<Position> {
         [
             Position::new(-1, -1),
@@ -43,16 +42,15 @@ impl GridSize {
             Position::new(1, 0),
             Position::new(1, 1),
         ]
-            .iter()
-            .map(|delta| *delta + position)
-            .filter(|pos| self.contains(pos))
-            .collect()
+        .iter()
+        .map(|delta| *delta + position)
+        .filter(|pos| self.contains(pos))
+        .collect()
     }
 
-
-    pub fn all_positions(&self) -> impl Iterator<Item=Position> + '_ {
-        (0..self.max_rows)
-            .flat_map(move |row| (0..self.max_columns)
-                .map(move |column| Position::new(row, column)))
+    pub fn all_positions(&self) -> impl Iterator<Item = Position> + '_ {
+        (0..self.max_rows).flat_map(move |row| {
+            (0..self.max_columns).map(move |column| Position::new(row, column))
+        })
     }
 }

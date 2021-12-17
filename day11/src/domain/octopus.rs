@@ -12,9 +12,15 @@ pub enum Octopus {
 impl Octopus {
     pub fn increase(&mut self) {
         *self = match self {
-            GainingEnergy(value) => if *value == 9 { WillFlash } else { GainingEnergy(*value + 1) },
+            GainingEnergy(value) => {
+                if *value == 9 {
+                    WillFlash
+                } else {
+                    GainingEnergy(*value + 1)
+                }
+            }
             WillFlash => Flashed,
-            Flashed => Flashed
+            Flashed => Flashed,
         }
     }
 
@@ -23,7 +29,6 @@ impl Octopus {
             *self = GainingEnergy(0)
         }
     }
-
 }
 
 impl FromStr for Octopus {
@@ -34,7 +39,6 @@ impl FromStr for Octopus {
         Ok(GainingEnergy(value))
     }
 }
-
 
 #[cfg(test)]
 mod tests {
