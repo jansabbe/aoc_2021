@@ -19,21 +19,20 @@ impl FromStr for Cave {
                 let first_two_chars: Vec<char> = val.chars().take(2).collect();
                 Ok(Cave::Big([
                     *first_two_chars.get(0).unwrap_or(&'\0'),
-                    *first_two_chars.get(1).unwrap_or(&'\0')
+                    *first_two_chars.get(1).unwrap_or(&'\0'),
                 ]))
             }
             val if val.to_lowercase() == val => {
                 let first_two_chars: Vec<char> = val.chars().take(2).collect();
                 Ok(Cave::Small([
                     *first_two_chars.get(0).unwrap_or(&'\0'),
-                    *first_two_chars.get(1).unwrap_or(&'\0')
+                    *first_two_chars.get(1).unwrap_or(&'\0'),
                 ]))
             }
-            _ => Err(())
+            _ => Err(()),
         }
     }
 }
-
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Connection(pub Cave, pub Cave);
@@ -51,7 +50,6 @@ impl FromStr for Connection {
     }
 }
 
-
 #[derive(Eq, PartialEq, Debug)]
 pub struct Path {
     caves: Vec<Cave>,
@@ -66,14 +64,14 @@ impl Path {
         }
     }
 
-    pub fn follow(&self, cave: Cave) -> Path {
+    pub fn extended_with(&self, cave: Cave) -> Path {
         let will_visit_small_twice = matches!(cave, Cave::Small(_)) && self.caves.contains(&cave);
         let mut new_path = self.caves.clone();
         new_path.push(cave);
 
         Path {
             caves: new_path,
-            visited_small_cave_twice: self.visited_small_cave_twice || will_visit_small_twice
+            visited_small_cave_twice: self.visited_small_cave_twice || will_visit_small_twice,
         }
     }
 
@@ -81,8 +79,7 @@ impl Path {
         *self.caves.last().expect("Should have atleast one cave")
     }
 
-    pub fn can_visit_lower(&self, cave: Cave) -> bool {
+    pub fn can_visit_small_cave(&self, cave: Cave) -> bool {
         !self.caves.contains(&cave) || !self.visited_small_cave_twice
-
     }
 }
