@@ -21,10 +21,10 @@ impl FromStr for Graph {
 }
 
 impl Graph {
-    fn nodes_connected_to<'a>(&'a self, id: &'a NodeId) -> impl Iterator<Item=&'a NodeId> + 'a {
+    fn nodes_connected_to<'a>(&'a self, id: NodeId) -> impl Iterator<Item=NodeId> + 'a {
         self.connections
             .iter()
-            .filter_map(move |Connection(a, b)| match (a, b) {
+            .filter_map(move |&Connection(a, b)| match (a, b) {
                 (from, to) if to == id => Some(from),
                 (from, to) if from == id => Some(to),
                 _ => None
@@ -37,24 +37,25 @@ impl Graph {
 
         while !paths_to_consider.is_empty() {
             let current = paths_to_consider.pop().unwrap();
-            for goto_node in self.nodes_path_can_follow(&current) {
-                if *goto_node == NodeId::End {
-                    paths_to_end.push(current.follow(goto_node))
-                } else {
-                    paths_to_consider.push(current.follow(goto_node))
+            self.nodes_connected_to(current.last_node()).for_each(|next_node| {
+                match next_node {
+                    NodeId::Lower(_) if !current.contains(next_node) => {
+                        paths_to_consider.push(current.follow(next_node))
+                    }
+                    NodeId::Upper(_) => {
+                        paths_to_consider.push(current.follow(next_node))
+                    }
+                    NodeId::End => {
+                        paths_to_end.push(current.follow(next_node));
+                    }
+                    _ => {}
                 }
-            }
+            });
         }
 
         return paths_to_end;
     }
 
-    fn nodes_path_can_follow<'a>(&'a self, path: &'a Path) -> Vec<&'a NodeId> {
-        let last_node = path.last_node();
-        self.nodes_connected_to(last_node)
-            .filter(|n| path.can_follow(n))
-            .collect()
-    }
 }
 
 #[cfg(test)]
@@ -72,11 +73,11 @@ mod tests {
             A-end\n\
             b-end\n".parse().unwrap();
 
-        assert_eq!(graph.nodes_connected_to(&NodeId::Upper("A".to_string())).collect::<Vec<&NodeId>>(), vec![
-            &NodeId::Start,
-            &NodeId::Lower("c".to_string()),
-            &NodeId::Lower("b".to_string()),
-            &NodeId::End,
+        assert_eq!(graph.nodes_connected_to(NodeId::Upper(['A', '\0'])).collect::<Vec<NodeId>>(), vec![
+            NodeId::Start,
+            NodeId::Lower(['c', '\0']),
+            NodeId::Lower(['b', '\0']),
+            NodeId::End,
         ])
     }
 
