@@ -1,7 +1,7 @@
 mod domain;
 
 use std::str::FromStr;
-use domain::{NodeId, Connection, Path};
+use domain::{Cave, Connection, Path};
 
 struct Graph {
     connections: Vec<Connection>,
@@ -21,36 +21,36 @@ impl FromStr for Graph {
 }
 
 impl Graph {
-    fn nodes_connected_to<'a>(&'a self, id: NodeId) -> impl Iterator<Item=NodeId> + 'a {
+    fn caves_connected_to(&self, cave: Cave) -> impl Iterator<Item=Cave> + '_ {
         self.connections
             .iter()
             .filter_map(move |&Connection(a, b)| match (a, b) {
-                (from, to) if to == id => Some(from),
-                (from, to) if from == id => Some(to),
+                (from, to) if to == cave => Some(from),
+                (from, to) if from == cave => Some(to),
                 _ => None
             })
     }
 
-    fn paths_to_end(&self) -> Vec<Path> {
-        let mut paths_to_end = Vec::new();
+    fn paths_to_end(&self) -> i32 {
+        let mut paths_to_end = 0;
         let mut paths_to_consider = vec![Path::new()];
-
         while !paths_to_consider.is_empty() {
-            let current = paths_to_consider.pop().unwrap();
-            self.nodes_connected_to(current.last_node()).for_each(|next_node| {
-                match next_node {
-                    NodeId::Lower(_) if !current.contains(next_node) => {
-                        paths_to_consider.push(current.follow(next_node))
+            let path = paths_to_consider.pop().unwrap();
+
+            for next_cave in self.caves_connected_to(path.last_cave()) {
+                match next_cave {
+                    Cave::Small(_) if path.can_visit_lower(next_cave) => {
+                        paths_to_consider.push(path.follow(next_cave))
                     }
-                    NodeId::Upper(_) => {
-                        paths_to_consider.push(current.follow(next_node))
+                    Cave::Big(_) => {
+                        paths_to_consider.push(path.follow(next_cave))
                     }
-                    NodeId::End => {
-                        paths_to_end.push(current.follow(next_node));
+                    Cave::End => {
+                        paths_to_end += 1
                     }
                     _ => {}
                 }
-            });
+            }
         }
 
         return paths_to_end;
@@ -63,7 +63,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn nodes_connected_to() {
+    fn caves_connected_to() {
         let graph: Graph = "\
             start-A\n\
             start-b\n\
@@ -73,11 +73,11 @@ mod tests {
             A-end\n\
             b-end\n".parse().unwrap();
 
-        assert_eq!(graph.nodes_connected_to(NodeId::Upper(['A', '\0'])).collect::<Vec<NodeId>>(), vec![
-            NodeId::Start,
-            NodeId::Lower(['c', '\0']),
-            NodeId::Lower(['b', '\0']),
-            NodeId::End,
+        assert_eq!(graph.caves_connected_to(Cave::Big(['A', '\0'])).collect::<Vec<Cave>>(), vec![
+            Cave::Start,
+            Cave::Small(['c', '\0']),
+            Cave::Small(['b', '\0']),
+            Cave::End,
         ])
     }
 
@@ -92,55 +92,13 @@ mod tests {
             A-end\n\
             b-end\n".parse().unwrap();
 
-        assert_eq!(graph.paths_to_end().len(), 10)
+        assert_eq!(graph.paths_to_end(), 36)
     }
 
     #[test]
-    fn paths_to_end_complex() {
-        let graph: Graph = "\
-        fs-end\n\
-        he-DX\n\
-        fs-he\n\
-        start-DX\n\
-        pj-DX\n\
-        end-zg\n\
-        zg-sl\n\
-        zg-pj\n\
-        pj-he\n\
-        RW-he\n\
-        fs-DX\n\
-        pj-RW\n\
-        zg-RW\n\
-        start-pj\n\
-        he-WI\n\
-        zg-he\n\
-        pj-fs\n\
-        start-RW\n".parse().unwrap();
-        assert_eq!(graph.paths_to_end().len(), 226)
-    }
-
-    #[test]
-    fn huh() {
-        let graph: Graph = "\
-        dc-end\n\
-        HN-start\n\
-        start-kj\n\
-        dc-start\n\
-        dc-HN\n\
-        LN-dc\n\
-        HN-end\n\
-        kj-sa\n\
-        kj-HN\n\
-        kj-dc\n\
-        ".parse().unwrap();
-
-        assert_eq!(graph.paths_to_end().len(), 19)
-    }
-
-    #[test]
-    fn part_1() {
+    fn part_2() {
         let input = include_str!("../input.txt");
         let graph: Graph = input.parse().unwrap();
-        assert_eq!(graph.paths_to_end().len(), 3000)
+        assert_eq!(graph.paths_to_end(), 74222)
     }
 }
